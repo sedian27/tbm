@@ -1,14 +1,14 @@
 import User from "../models/user.js";
-import role from "../models/role.js";
 import moment from "moment";
 import bcrypt from "../lib/bcrypt.js";
 import jwt from "../lib/jwt.js";
+import userService from "../services/user.js";
 
 const registerUser = async (req, res) => {
   if (!req.body.name || !req.body.email || !req.body.password)
     return res.status(400).send({ message: "Incomplete data" });
 
-  let pass = await bcrypt.hassPasword(req.body.password);
+  let pass = await bcrypt.hassGenerate(req.body.password);
 
   const schema = new User({
     name: req.body.name,
@@ -110,19 +110,14 @@ const updateUser = async (req, res) => {
   if (!req.body.name || !req.body.email || !req.body.roleId)
     return res.status(400).send({ message: "Incomplete data" });
 
-  const searchUser = await user.findById({ _id: req.body._id });
-  if (req.body.email !== searchUser.email)
-    return res
-      .status(400)
-      .send({ message: "The email should never be changed" });
-
   let pass = "";
 
   if (req.body.password) {
-    const passHash = await bcrypt.compare(
+    const passHash = await bcrypt.hassCompare(
       req.body.password,
       searchUser.password
     );
+    if(passHash) return res.status()
     if (!passHash) {
       pass = await bcrypt.hash(req.body.password, 10);
     } else {
@@ -132,34 +127,28 @@ const updateUser = async (req, res) => {
     pass = searchUser.password;
   }
 
-  const existingUser = await user.findOne({
-    name: req.body.name,
-    email: req.body.email,
-    password: pass,
-    roleId: req.body.roleId,
-  });
-  if (existingUser)
-    return res.status(400).send({ message: "you didn't make any changes" });
+  let changes = await userService.isChanges(req.body, pass);
+  if (changes)
+    return res.status(400).send({ mesagge: "you didn't make any changes" });
 
-  const userUpdate = await user.findByIdAndUpdate(req.body._id, {
+  const userUpdated = await User.findByIdAndUpdate(req.body._id, {
     name: req.body.name,
-    email: req.body.email,
     password: pass,
     roleId: req.body.roleId,
   });
 
-  return !userUpdate
+  return !userUpdated
     ? res.status(400).send({ message: "Error editing user" })
     : res.status(200).send({ message: "User updated" });
 };
 
 const deleteUser = async (req, res) => {
-  if (!req.body._id) return res.status(400).send("Incomplete data");
+  if (!req.params["_id"]) return res.status(400).send("Incomplete data");
 
-  const userDelete = await user.findByIdAndUpdate(req.body._id, {
+  const userDeleted = await User.findByIdAndUpdate(req.params["_id"], {
     dbStatus: false,
   });
-  return !userDelete
+  return !userDeleted
     ? res.status(400).send({ message: "User no found" })
     : res.status(200).send({ message: "User deleted" });
 };
@@ -168,33 +157,22 @@ const login = async (req, res) => {
   if (!req.body.email || !req.body.password)
     return res.status(400).send({ message: "Incomplete data" });
 
-  const userLogin = await user.findOne({ email: req.body.email });
+  const userLogin = await User.findOne({ email: req.body.email });
   if (!userLogin)
     return res.status(400).send({ message: "Wrong email or password" });
 
-  const hash = await bcrypt.compare(req.body.password, userLogin.password);
+  let pass = await bcrypt.hassCompare(req.body.password, userLogin.password);
+
+  if (!pass)
+    return res.status(400).send({ message: "Wrong email or password" });
 
   if (!userLogin.dbStatus)
     return res.status(400).send({ message: "Wrong email or password" });
 
-  if (!hash)
-    return res.status(400).send({ message: "Wrong email or password" });
-
-  try {
-    return res.status(200).json({
-      token: jwt.sign(
-        {
-          _id: userLogin._id,
-          name: userLogin.name,
-          roleId: userLogin.roleId,
-          iat: moment().unix(),
-        },
-        process.env.SK_JWT
-      ),
-    });
-  } catch (e) {
-    return res.status(400).send({ message: "Login error" });
-  }
+  const token = await jwt.generateToken(userLogin);
+  return !token
+    ? res.status(500).send({ message: "Login error" })
+    : res.status(200).send({ token });
 };
 
 export default {
