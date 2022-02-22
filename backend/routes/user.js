@@ -3,10 +3,11 @@ import user from "../controllers/user.js";
 import auth from "../middlewares/auth.js";
 import admin from "../middlewares/admin.js";
 import userMidd from "../middlewares/user.js";
+import roleMidd from "../middlewares/role.js";
 import validId from "../middlewares/validId.js";
 const router = express.Router();
 
-router.post("/register",userMidd.existingUser, user.registerUser);
+router.post("/register",userMidd.existingUser, roleMidd.getRoleUser, user.registerUser);
 router.post("/registerAdminUser", auth, admin, user.registerAdminUser);
 router.post("/login", user.login);
 router.get("/listUsers/:name?", auth, admin, user.listAllUser);

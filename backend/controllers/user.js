@@ -1,47 +1,32 @@
-import user from "../models/user.js";
+import User from "../models/user.js";
 import role from "../models/role.js";
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 import moment from "moment";
+import bcrypt from "../lib/bcrypt.js";
+import jwt from "../lib/jwt.js";
 
 const registerUser = async (req, res) => {
   if (!req.body.name || !req.body.email || !req.body.password)
     return res.status(400).send({ message: "Incomplete data" });
 
+  let pass = await bcrypt.hassPasword(req.body.password);
 
-  const passHash = await bcrypt.hash(req.body.password, 10);
-
-  const roleId = await role.findOne({ name: "user" });
-  if (!role) return res.status(400).send({ message: "No role was assigned" });
-
-  const userRegister = new user({
+  const schema = new User({
     name: req.body.name,
     email: req.body.email,
-    password: passHash,
-    roleId: roleId._id,
+    password: pass,
+    role: req.body.role,
     dbStatus: true,
   });
 
-  const result = await userRegister.save();
+  const result = await schema.save();
   if (!result)
     return res.status(500).send({ message: "Failed to register user" });
 
-  try {
-    return res.status(200).json({
-      token: jwt.sign(
-        {
-          _id: result._id,
-          name: result.name,
-          role: result.role,
-          iat: moment().unix(),
-        },
-        process.env.SK_JWT
-      ),
-    });
-  } catch (e) {
-    return res.status(500).send({ message: "Register error" });
-  }
+  const token = await jwt.generateToken(result);
 
+  return !token
+    ? res.status(500).send({ message: "Failed to register user" })
+    : res.status(200).send({ token });
 };
 
 const registerAdminUser = async (req, res) => {
@@ -115,8 +100,7 @@ const getUserRole = async (req, res) => {
     .findOne({ email: req.params.email })
     .populate("roleId")
     .exec();
-  if (!userRole)
-    return res.status(400).send({ message: "No search results" });
+  if (!userRole) return res.status(400).send({ message: "No search results" });
 
   userRole = userRole.roleId.name;
   return res.status(200).send({ userRole });

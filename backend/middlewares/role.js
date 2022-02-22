@@ -17,4 +17,12 @@ const doNotChanges = async (req, res, next) => {
     : next();
 };
 
-export default { existingRole, doNotChanges };
+const getRoleUser = async (req, res, next) => {
+  const role = await Role.findOne({ name: "user" });
+  if (!role) return res.status(400).send({ message: "error assigning role" });
+
+  req.body.role = role._id;
+  next();
+};
+
+export default { existingRole, doNotChanges, getRoleUser };
