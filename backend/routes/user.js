@@ -28,7 +28,14 @@ router.get("/listUsers/:name?", auth, admin, user.listUsers);
 router.get("/listAllUsers/:name?", auth, admin, user.listAllUser);
 router.get("/getRole/:email", auth, user.getUserRole);
 router.get("/findUser/:_id", auth, validId, admin, user.findUser);
-router.put("/updateUser", auth, admin, user.updateUser);
+router.put(
+  "/updateUser",
+  auth,
+  admin,
+  userMidd.validData,
+  userMidd.validRole,
+  user.updateUser
+);
 router.put("/deleteUser", auth, admin, user.deleteUser);
 
 export default router;

@@ -68,9 +68,6 @@ const getUserRole = async (req, res) => {
 };
 
 const updateUser = async (req, res) => {
-  if (!req.body.name || !req.body.email || !req.body.role)
-    return res.status(400).send({ message: "Incomplete data" });
-
   let pass = "";
 
   if (req.body.password) {
