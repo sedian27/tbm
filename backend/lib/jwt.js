@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import moment from "moment";
 
 const generateToken = async (user) => {
-  let message = "";
+  let message = false;
   try {
     return jwt.sign(
       {
@@ -14,7 +14,7 @@ const generateToken = async (user) => {
       process.env.SK_JWT
     );
   } catch (e) {
-    return (message = "Token failed");
+    return message;
   }
 };
 
