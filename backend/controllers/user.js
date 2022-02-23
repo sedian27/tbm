@@ -27,13 +27,9 @@ const registerUser = async (req, res) => {
 };
 
 const listUsers = async (req, res) => {
-  const userList = await user
-    .find({
-      $and: [
-        { name: new RegExp(req.params["name"], "i") },
-        { dbStatus: "true" },
-      ],
-    })
+  const userList = await User.find({
+    $and: [{ name: new RegExp(req.params["name"], "i") }, { dbStatus: "true" }],
+  })
     .populate("role")
     .exec();
   return userList.length === 0
@@ -42,10 +38,9 @@ const listUsers = async (req, res) => {
 };
 
 const listAllUser = async (req, res) => {
-  const userList = await user
-    .find({
-      $and: [{ name: new RegExp(req.params["name"], "i") }],
-    })
+  const userList = await User.find({
+    $and: [{ name: new RegExp(req.params["name"], "i") }],
+  })
     .populate("role")
     .exec();
   return userList.length === 0
@@ -54,8 +49,7 @@ const listAllUser = async (req, res) => {
 };
 
 const findUser = async (req, res) => {
-  const userfind = await user
-    .findById({ _id: req.params["_id"] })
+  const userfind = await User.findById({ _id: req.params["_id"] })
     .populate("role")
     .exec();
   return !userfind
@@ -64,8 +58,7 @@ const findUser = async (req, res) => {
 };
 
 const getUserRole = async (req, res) => {
-  let userRole = await user
-    .findOne({ email: req.params.email })
+  let userRole = await User.findOne({ email: req.params.email })
     .populate("role")
     .exec();
   if (!userRole) return res.status(400).send({ message: "No search results" });
