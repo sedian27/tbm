@@ -1,5 +1,4 @@
 import User from "../models/user.js";
-import moment from "moment";
 import bcrypt from "../lib/bcrypt.js";
 import jwt from "../lib/jwt.js";
 import userService from "../services/user.js";
