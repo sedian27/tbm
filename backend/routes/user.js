@@ -9,14 +9,12 @@ const router = express.Router();
 
 router.post(
   "/register",
-  userMidd.validData,
   userMidd.existingUser,
   roleMidd.getRoleUser,
   user.registerUser
 );
 router.post(
   "/registerAdminUser",
-  userMidd.validData,
   userMidd.validRole,
   userMidd.existingUser,
   auth,
@@ -28,11 +26,12 @@ router.get("/listUsers/:name?", auth, admin, user.listUsers);
 router.get("/listAllUsers/:name?", auth, admin, user.listAllUser);
 router.get("/getRole/:email", auth, user.getUserRole);
 router.get("/findUser/:_id", auth, validId, admin, user.findUser);
+router.put("/updateUser", auth, userMidd.validDataUpdate, user.updateUser);
 router.put(
-  "/updateUser",
+  "/updateUserAdmin",
   auth,
   admin,
-  userMidd.validData,
+  userMidd.validDataUpdate,
   userMidd.validRole,
   user.updateUser
 );

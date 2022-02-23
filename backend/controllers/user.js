@@ -68,31 +68,27 @@ const getUserRole = async (req, res) => {
 };
 
 const updateUser = async (req, res) => {
-  let pass = "";
+  const searchUser = await User.findOne({ email: req.body.email });
+
+  let pass = searchUser.password;
+  let role = searchUser.role;
 
   if (req.body.password) {
-    const passHash = await bcrypt.hassCompare(
-      req.body.password,
-      searchUser.password
-    );
-    if (passHash) return res.status();
-    if (!passHash) {
-      pass = await bcrypt.hash(req.body.password, 10);
-    } else {
-      pass = searchUser.password;
-    }
-  } else {
-    pass = searchUser.password;
+    const passHash = await bcrypt.hassCompare(req.body.password, pass);
+    if (!passHash) pass = await bcrypt.hassGenerate(req.body.password);
   }
 
+  if (req.user.roleName === "admin") role = req.body.role;
+
   let changes = await userService.isChanges(req.body, pass);
+
   if (changes)
     return res.status(400).send({ mesagge: "you didn't make any changes" });
 
   const userUpdated = await User.findByIdAndUpdate(req.body._id, {
     name: req.body.name,
     password: pass,
-    role: req.body.role,
+    role: role,
   });
 
   return !userUpdated
