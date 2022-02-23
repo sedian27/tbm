@@ -35,6 +35,6 @@ router.put(
   userMidd.validRole,
   user.updateUser
 );
-router.put("/deleteUser", auth, admin, user.deleteUser);
+router.put("/deleteUser/:_id", auth, validId, user.deleteUser);
 
 export default router;

@@ -97,8 +97,6 @@ const updateUser = async (req, res) => {
 };
 
 const deleteUser = async (req, res) => {
-  if (!req.params["_id"]) return res.status(400).send("Incomplete data");
-
   const userDeleted = await User.findByIdAndUpdate(req.params["_id"], {
     dbStatus: false,
   });
