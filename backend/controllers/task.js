@@ -18,7 +18,6 @@ const saveTask = async (req, res) => {
     : res.status(200).send({ result });
 };
 
-
 const listTask = async (req, res) => {
   const taskList = await task.find({ userId: req.user._id });
   return taskList.length === 0
@@ -40,21 +39,10 @@ const updateTask = async (req, res) => {
 };
 
 const deleteTask = async (req, res) => {
-  let taskImg = await task.findById({ _id: req.params["_id"] });
-
-  taskImg = taskImg.imageUrl;
-  taskImg = taskImg.split("/")[4];
-  let serverImg = "./uploads/" + taskImg;
-
   const taskDelete = await task.findByIdAndDelete({ _id: req.params["_id"] });
   if (!taskDelete) return res.status(400).send({ message: "Task not found" });
 
-  try {
-    if (taskImg) fs.unlinkSync(serverImg);
-    return res.status(200).send({ message: "Task deleted" });
-  } catch (e) {
-    console.log("Image no found in server");
-  }
+  return res.status(200).send({ message: "Task deleted" });
 };
 
 export default { saveTask, listTask, updateTask, deleteTask };
