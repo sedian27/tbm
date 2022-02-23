@@ -21,7 +21,7 @@ router.post(
   userMidd.existingUser,
   auth,
   admin,
-  user.registerAdminUser
+  user.registerUser
 );
 router.post("/login", user.login);
 router.get("/listUsers/:name?", auth, admin, user.listAllUser);

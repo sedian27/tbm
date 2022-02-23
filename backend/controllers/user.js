@@ -138,7 +138,6 @@ const login = async (req, res) => {
 
 export default {
   registerUser,
-  registerAdminUser,
   listUsers,
   listAllUser,
   findUser,
