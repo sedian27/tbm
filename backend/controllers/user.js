@@ -29,12 +29,7 @@ const registerUser = async (req, res) => {
 };
 
 const registerAdminUser = async (req, res) => {
-  if (
-    !req.body.name ||
-    !req.body.email ||
-    !req.body.password ||
-    !req.body.roleId
-  )
+  if (!req.body.name || !req.body.email || !req.body.password || !req.body.role)
     return res.status(400).send({ message: "Incomplete data" });
 
   const existingUser = await user.findOne({ email: req.body.email });
@@ -47,7 +42,7 @@ const registerAdminUser = async (req, res) => {
     name: req.body.name,
     email: req.body.email,
     password: passHash,
-    roleId: req.body.roleId,
+    role: req.body.role,
     dbStatus: true,
   });
 
@@ -65,7 +60,7 @@ const listUsers = async (req, res) => {
         { dbStatus: "true" },
       ],
     })
-    .populate("roleId")
+    .populate("role")
     .exec();
   return userList.length === 0
     ? res.status(400).send({ message: "Empty users list" })
@@ -77,7 +72,7 @@ const listAllUser = async (req, res) => {
     .find({
       $and: [{ name: new RegExp(req.params["name"], "i") }],
     })
-    .populate("roleId")
+    .populate("role")
     .exec();
   return userList.length === 0
     ? res.status(400).send({ message: "Empty users list" })
@@ -87,7 +82,7 @@ const listAllUser = async (req, res) => {
 const findUser = async (req, res) => {
   const userfind = await user
     .findById({ _id: req.params["_id"] })
-    .populate("roleId")
+    .populate("role")
     .exec();
   return !userfind
     ? res.status(400).send({ message: "No search results" })
@@ -97,16 +92,16 @@ const findUser = async (req, res) => {
 const getUserRole = async (req, res) => {
   let userRole = await user
     .findOne({ email: req.params.email })
-    .populate("roleId")
+    .populate("role")
     .exec();
   if (!userRole) return res.status(400).send({ message: "No search results" });
 
-  userRole = userRole.roleId.name;
+  userRole = userRole.role.name;
   return res.status(200).send({ userRole });
 };
 
 const updateUser = async (req, res) => {
-  if (!req.body.name || !req.body.email || !req.body.roleId)
+  if (!req.body.name || !req.body.email || !req.body.role)
     return res.status(400).send({ message: "Incomplete data" });
 
   let pass = "";
@@ -116,7 +111,7 @@ const updateUser = async (req, res) => {
       req.body.password,
       searchUser.password
     );
-    if(passHash) return res.status()
+    if (passHash) return res.status();
     if (!passHash) {
       pass = await bcrypt.hash(req.body.password, 10);
     } else {
@@ -133,7 +128,7 @@ const updateUser = async (req, res) => {
   const userUpdated = await User.findByIdAndUpdate(req.body._id, {
     name: req.body.name,
     password: pass,
-    roleId: req.body.roleId,
+    role: req.body.role,
   });
 
   return !userUpdated
