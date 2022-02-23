@@ -27,11 +27,15 @@ const registerUser = async (req, res) => {
 };
 
 const listUsers = async (req, res) => {
-  const userList = await User.find({
-    $and: [{ name: new RegExp(req.params["name"], "i") }, { dbStatus: "true" }],
-  })
-    .populate("role")
-    .exec();
+  const userList = await User.find(
+    {
+      $and: [
+        { name: new RegExp(req.params["name"], "i") },
+        { dbStatus: "true" },
+      ],
+    },
+    { _id: 0, name: 1 }
+  );
   return userList.length === 0
     ? res.status(400).send({ message: "Empty users list" })
     : res.status(200).send({ userList });
