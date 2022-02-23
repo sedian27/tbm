@@ -4,9 +4,6 @@ import jwt from "../lib/jwt.js";
 import userService from "../services/user.js";
 
 const registerUser = async (req, res) => {
-  if (!req.body.name || !req.body.email || !req.body.password)
-    return res.status(400).send({ message: "Incomplete data" });
-
   let pass = await bcrypt.hassGenerate(req.body.password);
 
   const schema = new User({
@@ -18,6 +15,7 @@ const registerUser = async (req, res) => {
   });
 
   const result = await schema.save();
+
   if (!result)
     return res.status(500).send({ message: "Failed to register user" });
 
